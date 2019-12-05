@@ -43,29 +43,20 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         new_ingredients = validated_data.pop('ingredients')
-        
-        ingredients = instance.ingredients.all()
-        ingredients = list(ingredients)
-
         new_steps = validated_data.pop('steps')
-        
-        steps = instance.steps.all()
-        steps = list(steps)
 
         instance.name = validated_data.get('name', instance.name)
         instance.save()
 
+        instance.ingredients.all().delete()
         for ingredient in new_ingredients:
             print('\n Update Ingredient: ', ingredient.get('text'), '\n')
-            toAdd = ingredients.pop(0)
-            toAdd.text = ingredient.get('text')
-            toAdd.save()
+            Ingredient.objects.create(recipe=instance, **ingredient)
 
+        instance.steps.all().delete()
         for step in new_steps:
             print('\n Update Step: ', step, '\n')
-            toAdd = steps.pop(0)
-            toAdd.step_text = step.get('step_text')
-            toAdd.save()
+            Step.objects.create(recipe=instance, **step)
 
         return instance
 
